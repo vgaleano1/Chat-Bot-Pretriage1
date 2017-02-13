@@ -3,6 +3,6 @@ applications:
   memory: 256M
   instances: 1
   domain: mybluemix.net
-  name: Chat-Bot Pretriage
+  name: Chat-BotPretriage
   host: Chat-Bot-Pretriage
   disk_quota: 1024M
