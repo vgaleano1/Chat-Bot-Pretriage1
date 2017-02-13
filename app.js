@@ -48,7 +48,7 @@ var conversation = watson.conversation(watsonDialogCredentials);
 /* Variables de entorno Locales */
 var token = process.env.TOKEN
 		|| "EAAZAZB3HztaLwBAEX5DdLMYUjiaqzVgHHcvxBmPdcK14eqAIgXOdHKCUl4wYNiVu2yP76is58ZCnJQab7s0qvpiyT2uJSARpUu2ugnz91XJlqItCyqdns0yaCmifoOGHFaGamaK7o5lKbHWlppeTeA0OwXYVtACfZBC4dFiwkAZDZD";
-var secret = process.env.SECRET || 'Replace with your own Facebook secret';
+var secret = process.env.SECRET || 'valorpendiente';
 /* Inicializa servidor Node.js */
 var appEnv = cfenv.getAppEnv();
 var app = express();
@@ -109,7 +109,12 @@ function processEvent(event) {
 						.stringify(err));
 				console.error(JSON.stringify(err));
 				return res.status(err.code || 500).json(err);
-			}
+			};
+			
+			payload.context =data.context;
+			console.log("mensaje de texto");
+			console.log(payload.context);
+			
 			sendTextMessage(sender, data);
 		});
 
@@ -119,7 +124,7 @@ function processEvent(event) {
 /* Script pra recibir los mensajes desde facebook en /webhook/ */
 app.post('/webhook/', function(req, res) {
 	messaging_events = req.body.entry[0].messaging;
-	payload.context = req.body.context;
+//	payload.context = req.body.context;
 	for (i = 0; i < messaging_events.length; i++) {
 		event = req.body.entry[0].messaging[i];
 		processEvent(event);
