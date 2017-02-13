@@ -47,7 +47,7 @@ var watsonDialogCredentials = extend({
 var conversation = watson.conversation(watsonDialogCredentials);
 /* Variables de entorno Locales */
 var token = process.env.TOKEN
-		|| "EAAZAZB3HztaLwBAEX5DdLMYUjiaqzVgHHcvxBmPdcK14eqAIgXOdHKCUl4wYNiVu2yP76is58ZCnJQab7s0qvpiyT2uJSARpUu2ugnz91XJlqItCyqdns0yaCmifoOGHFaGamaK7o5lKbHWlppeTeA0OwXYVtACfZBC4dFiwkAZDZD";
+		|| "EAAZAZB3HztaLwBACCZC98Rz2SnkMEBkzK3sJCFUUL6Yi4L6ZAlv4bpeN43ZB5lzd15aqPmiPmjhqNxR0kcUOmwYKjZC2JB0aJZAOpOyoQyh3SrjPgiylEWURjQ9CkkGmuQ3sBNVJB6VYZADIQtL57duOzQcZCCZCNVwuFpW6WZCiAIkcQZDZD";
 var secret = process.env.SECRET || 'valorpendiente';
 /* Inicializa servidor Node.js */
 var appEnv = cfenv.getAppEnv();
@@ -56,6 +56,7 @@ app.use(bodyParser.json());
 app.listen(appEnv.port, appEnv.bind, function() {
 	console.log('listening on port ' + appEnv.port);
 });
+
 
 /* Se adiciona Path /webhook/ para integracion con Facebook */
 app.get('/webhook/', function(req, res) {
@@ -66,16 +67,65 @@ app.get('/webhook/', function(req, res) {
 	res.send('Error, wrong validation token');
 });
 
+/* Script pra recibir los mensajes desde facebook en /webhook/ */
+app.post('/webhook/', function(req, res) {
+	var dataa = req.body;
+	var messaging_events = req.body.entry[0].messaging;
+//	payload.context = req.body.context;
+	for (var i = 0; i < messaging_events.length; i++) {
+		event = req.body.entry[0].messaging[i];
+		processEvent(event);
+	}
+	res.sendStatus(200);
+});
+
+/* La funcion que procesa lo que se envia desde facebook e invoca Conversation */
+function processEvent(event) {
+	var sender = event.sender.id;
+	var text;
+	if (event.message && event.message.text) {
+		text = event.message.text;
+		console.log("mensaje 1 "+text.length);
+		payload.input = {
+			text : text
+		};
+		conversation.message(payload, function(err, data) {
+			if (err) {
+				console.log('error llamando el api de conversation', JSON
+						.stringify(err));
+				console.error(JSON.stringify(err));
+				return res.status(err.code || 500).json(err);
+			};
+			var cadena=data.context.node_output_map;
+			
+			payload.context =data.context;
+			
+			console.log("mensaje de texto");
+			console.log(payload.context);
+			
+			sendTextMessage(sender, data);
+		});
+
+	}
+}
+
 /* la funcion que envia el mensaje a Facebook */
 function sendTextMessage(recipient, text) {
 	sendtext = JSON.stringify(text.output.text);
 	ad = JSON.parse(sendtext);
 	sd = new Array(1);
 	sd[0]= ad;
-	console.log("prueb "+sd);
 	var a = sd[0];
+	var cas;
 	aa= ""+a+"";
-	console.log("prue " +aa);
+	console.log("ENTRADA IN  " + aa);
+	console.log("mensaje 2 "+aa.length);
+	
+	sendText1(recipient,aa);
+
+}
+
+function sendText1(recipient,aa){
 	request({
 		url : 'https://graph.facebook.com/v2.6/me/messages',
 		qs : {
@@ -101,43 +151,3 @@ function sendTextMessage(recipient, text) {
 	});
 }
 
-/* La funcion que procesa lo que se envia desde facebook e invoca Conversation */
-function processEvent(event) {
-	var sender = event.sender.id;
-	var text;
-	if (event.message && event.message.text) {
-		text = event.message.text;
-		console.log("mensaje 1 "+text);
-		payload.input = {
-			text : text
-		};
-		conversation.message(payload, function(err, data) {
-			if (err) {
-				console.log('error llamando el api de conversation', JSON
-						.stringify(err));
-				console.error(JSON.stringify(err));
-				return res.status(err.code || 500).json(err);
-			};
-			var cadena=data.context.node_output_map;
-			
-			payload.context =data.context;
-			
-			console.log("mensaje de texto");
-			console.log(payload.context);
-			
-			sendTextMessage(sender, data);
-		});
-
-	}
-}
-
-/* Script pra recibir los mensajes desde facebook en /webhook/ */
-app.post('/webhook/', function(req, res) {
-	messaging_events = req.body.entry[0].messaging;
-//	payload.context = req.body.context;
-	for (i = 0; i < messaging_events.length; i++) {
-		event = req.body.entry[0].messaging[i];
-		processEvent(event);
-	}
-	res.sendStatus(200);
-});
