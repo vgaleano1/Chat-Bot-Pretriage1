@@ -69,6 +69,13 @@ app.get('/webhook/', function(req, res) {
 /* la funcion que envia el mensaje a Facebook */
 function sendTextMessage(recipient, text) {
 	sendtext = JSON.stringify(text.output.text);
+	ad = JSON.parse(sendtext);
+	sd = new Array(1);
+	sd[0]= ad;
+	console.log("prueb "+sd);
+	var a = sd[0];
+	aa= ""+a+"";
+	console.log("prue " +aa);
 	request({
 		url : 'https://graph.facebook.com/v2.6/me/messages',
 		qs : {
@@ -80,7 +87,7 @@ function sendTextMessage(recipient, text) {
 				id : recipient
 			},
 			message : {
-				text : sendtext
+				text : aa
 			}
 		}
 	},
@@ -100,6 +107,7 @@ function processEvent(event) {
 	var text;
 	if (event.message && event.message.text) {
 		text = event.message.text;
+		console.log("mensaje 1 "+text);
 		payload.input = {
 			text : text
 		};
@@ -110,8 +118,10 @@ function processEvent(event) {
 				console.error(JSON.stringify(err));
 				return res.status(err.code || 500).json(err);
 			};
+			var cadena=data.context.node_output_map;
 			
 			payload.context =data.context;
+			
 			console.log("mensaje de texto");
 			console.log(payload.context);
 			
