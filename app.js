@@ -69,10 +69,10 @@ app.get('/webhook/', function(req, res) {
 
 /* Script pra recibir los mensajes desde facebook en /webhook/ */
 app.post('/webhook/', function(req, res) {
-	var dataa = req.body;
-	var messaging_events = req.body.entry[0].messaging;
-//	payload.context = req.body.context;
-	for (var i = 0; i < messaging_events.length; i++) {
+	
+	messaging_events = req.body.entry[0].messaging;
+	//payload.context = req.body.context;
+	for (i = 0; i < messaging_events.length; i++) {
 		event = req.body.entry[0].messaging[i];
 		processEvent(event);
 	}
@@ -118,14 +118,8 @@ function sendTextMessage(recipient, text) {
 	var a = sd[0];
 	var cas;
 	aa= ""+a+"";
-	console.log("ENTRADA IN  " + aa);
+	//console.log("ENTRADA IN  " + aa);
 	console.log("mensaje 2 "+aa.length);
-	
-	sendText1(recipient,aa);
-
-}
-
-function sendText1(recipient,aa){
 	request({
 		url : 'https://graph.facebook.com/v2.6/me/messages',
 		qs : {
@@ -137,7 +131,7 @@ function sendText1(recipient,aa){
 				id : recipient
 			},
 			message : {
-				text : aa
+				text : aa 
 			}
 		}
 	},
